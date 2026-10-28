@@ -1,11 +1,18 @@
 # Contract template
 
-Per-entity contract. Three sections, one per output file under `docs/slices/<entities>/`. Copy each between its `---` markers into the matching file. Keep answers short. Prefer an "Open question" over a guess.
+Per-entity contract. Three files under `docs/slices/<entities>/` — one folder per entity, with the entity's name pluralized (e.g. `docs/slices/films/`). Copy the content between each `<!-- FILE: ... -->` marker and the next marker into the named file. Keep answers short. Prefer an "Open question" over a guess.
 
-The entity folder name is the entity pluralized (e.g. `docs/slices/films/`). The three files grow over time: `intent.md` is near-stable, `spec.md` grows as verbs land, `plan.md` is updated per slice.
+Fill in frontmatter on first draft: set `status: draft` and `updated` to today's date (YYYY-MM-DD). The user bumps status to `approved` after review.
 
+The three files grow over time: `intent.md` is near-stable, `spec.md` grows as verbs land, `plan.md` is updated per slice.
+
+<!-- FILE: intent.md -->
 ---
-# intent.md
+status: draft
+updated: YYYY-MM-DD
+---
+
+# Intent
 
 ## Entity
 `<Entity>` (PascalCase, singular). Example: `Film`.
@@ -24,8 +31,14 @@ What this entity deliberately does not do. Call out capabilities that belong on 
 
 ## Open questions
 - 
+
+<!-- FILE: spec.md -->
 ---
-# spec.md
+status: draft
+updated: YYYY-MM-DD
+---
+
+# Spec
 
 ## Entity
 `<Entity>`.
@@ -63,15 +76,21 @@ Each verb's UI must cover these states. If a state is impossible for the verb, m
 What counts as a bad input or unhappy state, and what this entity does about it. Cover at minimum: invalid form input, missing record (404), concurrent edit (stale draft), DB constraint violation (unique, FK), corrupted import row. For URL params, fall back to a safe default — don't crash the route.
 
 ## Done means
-Checklist. Every item is something a human or test can verify in one pass. Keep adding items as verbs land.
+Checklist. Every item is something a human or test can verify in one pass. Each item starts with a stable, unique ID in the form `AC-N:` so `plan.md` can reference it in "Acceptance verification". Keep adding items as verbs land; never renumber or reuse an ID.
 
-- [ ] 
-- [ ] 
+- [ ] AC-1: 
+- [ ] AC-2: 
 
 ## Open questions
 - 
+
+<!-- FILE: plan.md -->
 ---
-# plan.md
+status: draft
+updated: YYYY-MM-DD
+---
+
+# Plan
 
 ## Entity
 `<Entity>`.
@@ -117,6 +136,14 @@ Any library this slice needs that isn't already installed. Each is an open quest
 
 - 
 
+## Acceptance verification
+One row per `AC-N` from `spec.md` → "Done means". Every AC must appear here; `scripts/validate-slices.mjs` enforces it.
+
+| AC    | Verified by |
+| ----- | ----------- |
+| AC-1  | _(e.g. `tests/e2e/film-create.spec.ts` happy path)_ |
+| AC-2  | _(e.g. `tests/unit/film/create.test.ts` + manual check)_ |
+
 ## Sequence
 Build order for the current slice. Thin first; a running UI before a correct one. For a `create-<entity>` first slice, a reasonable sequence is:
 
@@ -133,4 +160,3 @@ Adjust per verb.
 
 ## Open questions
 - 
----

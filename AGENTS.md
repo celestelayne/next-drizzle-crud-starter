@@ -67,6 +67,7 @@ npm run test            # Vitest in watch mode
 npm run test:ci         # Vitest one-shot
 npm run test:e2e        # Playwright headless
 npm run test:e2e:ui     # Playwright UI mode
+npm run validate:slices # Static validation of docs/slices/ contracts
 npm run db:generate     # Prisma client
 npm run db:migrate      # Create + apply a dev migration
 npm run db:deploy       # Apply pending migrations (CI/prod)
@@ -83,6 +84,10 @@ next-drizzle-crud-starter/
 ├── AGENTS.md
 ├── CLAUDE.md                       # optional, per-project Claude Code context
 ├── docs/
+│   ├── conventions/                # architectural rules with rationale + examples
+│   │   ├── README.md
+│   │   ├── data-ownership.md
+│   │   └── state-management.md
 │   └── slices/
 │       └── <entities>/             # per-entity contract (plural folder)
 │           ├── intent.md
@@ -126,16 +131,14 @@ Create files and folders only when a slice needs them. The structure above is wh
 
 ## Architecture guardrails
 
-1. **Data access through the data layer only.** Server actions and route handlers call functions in `src/features/<entity>/data.ts`. UI code never imports from `@prisma/client` directly.
+The one-line form of each rule is below. For rationale, worked examples, common violations, and exceptions, see [`docs/conventions/`](docs/conventions/README.md).
+
+1. **Data access through the data layer only.** Server actions and route handlers call functions in `src/features/<entity>/data.ts`. UI code never imports from `@prisma/client` directly. → [`docs/conventions/data-ownership.md`](docs/conventions/data-ownership.md)
 2. **Zod at every input boundary.** Form data, URL params, cookies, and CSV import rows are validated with Zod before reaching the data layer. The data layer trusts its inputs.
-3. **Server actions are the write boundary.** All mutations go through server actions in `src/features/<entity>/actions.ts`. Reserve `route.ts` route handlers for non-form contracts (CSV export streaming, webhooks).
-4. **One Prisma client.** `src/db/schema.ts` is the single source for the `db` instance. Every data function imports from there — never `new PrismaClient()` elsewhere.
-5. **Server-only guard.** `src/db/schema.ts` imports `server-only`. Keep secrets and DB access behind that guard; a client-component import of a module that transitively hits `server-only` will fail the build.
-6. **Explicit state ownership.**
-   - Form input: React component state (progressive enhancement via server actions).
-   - List filters, sort, pagination: URL query params (`?q=`, `?sort=`, `?page=`), with safe fallbacks on invalid values.
-   - User preferences across sessions: cookies via `next/headers`.
-   - Autosave drafts: DB-backed sibling model (e.g. `FilmDraft`), introduced by the entity's `autosave-<entity>` slice.
+3. **Server actions are the write boundary.** All mutations go through server actions in `src/features/<entity>/actions.ts`. Reserve `route.ts` route handlers for non-form contracts (CSV export streaming, webhooks). → [`docs/conventions/data-ownership.md`](docs/conventions/data-ownership.md)
+4. **One Prisma client.** `src/db/schema.ts` is the single source for the `db` instance. Every data function imports from there — never `new PrismaClient()` elsewhere. → [`docs/conventions/data-ownership.md`](docs/conventions/data-ownership.md)
+5. **Server-only guard.** `src/db/schema.ts` imports `server-only`. Keep secrets and DB access behind that guard; a client-component import of a module that transitively hits `server-only` will fail the build. → [`docs/conventions/data-ownership.md`](docs/conventions/data-ownership.md)
+6. **Explicit state ownership.** Each piece of state has one owner, chosen by who needs to observe it. React state for in-component ephemera, URL params for shareable list state, cookies for device preferences, DB for cross-device data (including autosave drafts). → [`docs/conventions/state-management.md`](docs/conventions/state-management.md)
 7. **Migrations are versioned.** Every schema change goes through `prisma migrate dev --name <descriptive_name>`. Never edit a committed migration file; create a new one.
 8. **No premature abstractions.** Prefer straightforward components and functions. Extract reusable abstractions only after genuine repetition or a clear architectural need.
 9. **Validate at external boundaries, fall back on failure.** Invalid URL params fall back to a safe default (e.g. `?sort=invalid` → use the default sort). Invalid form data renders inline errors — don't crash the route. Corrupted import rows report per-row errors; the batch continues.

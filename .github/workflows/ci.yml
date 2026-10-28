@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, typecheck, unit tests
+    name: Lint, typecheck, slice contracts, unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +27,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Validate slice contracts
+        run: npm run validate:slices
 
       - name: Typecheck
         run: npm run typecheck

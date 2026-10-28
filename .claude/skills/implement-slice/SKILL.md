@@ -16,7 +16,8 @@ The user asks to implement, build, or ship a planned slice. Phrases like "implem
 Before touching code:
 
 1. **Contract exists.** `docs/slices/<entities>/{intent,spec,plan}.md` must exist and have no unresolved "Open questions" relevant to the verb being implemented. If any open questions block implementation, stop and surface them.
-2. **Verb is `planned`.** `plan.md`'s "Verbs" table must list the target verb with status `planned`. If `in-progress` or `implemented`, stop and ask the user how to proceed (resume vs re-do).
+2. **All three docs are approved.** Each file's frontmatter must have `status: approved` or `status: implemented`. If any doc is still `draft` or `archived`, stop and ask the user to approve (or point them back to `new-slice` for revisions).
+3. **Verb is `planned`.** `plan.md`'s "Verbs" table must list the target verb with status `planned`. If `in-progress` or `implemented`, stop and ask the user how to proceed (resume vs re-do).
 3. **Not on `main`.** Check branch with `git rev-parse --abbrev-ref HEAD`. If on `main`, stop and ask the user to create a feature branch (per AGENTS.md slice loop step 3).
 4. **Working tree clean.** `git status --porcelain` is empty. If not, stop and ask whether to stash or amend.
 5. **Database reachable** if the slice touches the DB. Attempt a connection via `prisma db pull --print` or a trivial `db:status`. If unreachable, stop and surface the error.
@@ -49,11 +50,12 @@ Before touching code:
    3. `npm run test:ci`
    4. `npm run test:e2e`
    On any failure, attempt **one** fix pass addressing the root cause. If still failing after the fix pass, stop, revert the `in-progress` → `planned` status, and report the failure truthfully. Do not weaken a test or disable a check to pass.
-9. **Walk through `spec.md` → "Done means"** and record how each item was verified in `plan.md` → "Verbs" row for this verb.
+9. **Walk through `spec.md` → "Done means"** and record how each `AC-N` was verified in `plan.md` → "Acceptance verification" (the test file, manual check, or other evidence per row).
 10. **Update the contract.**
-    - `spec.md`: fill the verb's row with the final routes, server action name, fields read/written, and states covered. Add any new items to "Done means" discovered during implementation.
-    - `plan.md`: mark the verb `implemented`, record "Owner slice" and "Shared files touched", move dependency installs from "Dependencies to add" into "Files to change" rationale, and update "Database changes" with the migration name.
-11. Report what was created, what was modified, which checks passed, and point the user at `spec.md` → "Done means" for the final walk-through. Do not create a PR or push — that is slice-loop step 7, user-driven.
+    - `spec.md`: fill the verb's row with the final routes, server action name, fields read/written, and states covered. Add any new items to "Done means" discovered during implementation — give each a new `AC-N` ID continuing the numbering; never renumber. Bump `updated` in frontmatter.
+    - `plan.md`: mark the verb `implemented`, record "Owner slice" and "Shared files touched", move dependency installs from "Dependencies to add" into "Files to change" rationale, update "Database changes" with the migration name, and fill every row in "Acceptance verification". Bump `updated` in frontmatter.
+11. **Validate the contract.** Run `npm run validate:slices` and ensure it exits clean. If it fails, resolve the structural issues before reporting done.
+12. Report what was created, what was modified, which checks passed, and point the user at `spec.md` → "Done means" for the final walk-through. Do not create a PR or push — that is slice-loop step 7, user-driven.
 
 ## Boundaries
 
