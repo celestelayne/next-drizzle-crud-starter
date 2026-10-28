@@ -28,6 +28,12 @@ Once the contract is approved and you're on a feature branch, invoke the `implem
 
 The skill reads `intent.md` / `spec.md` / `plan.md`, follows the plan's "Sequence", asks before running `prisma migrate dev` or `npm install`, runs lint/typecheck/unit/e2e verification, and updates the contract to mark the verb `implemented`. It does not open the PR — that's your step.
 
+## Reviewing a slice
+
+Before opening the PR, invoke the `review-slice` skill — phrasings like `review create-film`, `audit the autosave-film slice`, `check import-films against the spec`. Pass `--persist` to also write the report to `docs/slices/<entities>/review-<verb>.md`.
+
+The skill does static review only: reads the diff and the contract, classifies spec coverage, flags data-loss and safety risks (destructive ops without confirmation, concurrent-edit races, migration safety, server-action exposure, URL-param crashes), and names interface-quality items that still need manual verification. It changes no code and no contract. Severity is `risk` (fix before merge), `needs-attention` (fix or accept explicitly), `manual-check` (verify in the browser), or `pass`.
+
 ## Slice loop
 
 Repeat for every slice:
@@ -41,7 +47,7 @@ Plan → Approve → Implement → Verify → Review → Merge → Repeat
 3. Create a feature branch.
 4. Invoke the `implement-slice` skill (e.g. "implement create-film") to turn the approved contract into working code, tests, and verification.
 5. Run automated checks and inspect the interface.
-6. Review the result against `spec.md` → "Done means".
+6. Invoke the `review-slice` skill (e.g. "review create-film") to compare the diff against the contract and surface spec gaps, data-loss risks, and manual-check items.
 7. Open a pull request, get required checks green.
 8. Merge after approval. Start the next slice only after the current one is merged.
 
@@ -87,7 +93,9 @@ next-drizzle-crud-starter/
 │       ├── new-slice/              # drafts the per-entity contract
 │       │   ├── SKILL.md
 │       │   └── contract-template.md
-│       └── implement-slice/        # turns an approved contract into code
+│       ├── implement-slice/        # turns an approved contract into code
+│       │   └── SKILL.md
+│       └── review-slice/           # static review of implemented slice vs contract
 │           └── SKILL.md
 ├── prisma/
 │   ├── schema.prisma
