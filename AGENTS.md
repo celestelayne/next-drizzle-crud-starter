@@ -22,6 +22,12 @@ The skill drafts or updates the per-entity contract at `docs/slices/<entities>/{
 
 Supported verbs out of the gate: `create`, `edit`, `delete`, `show`, `list`, `autosave`, `recover`, `import`, `export`. Other verbs are fine — the skill will raise them as an open question in `plan.md`.
 
+## Implementing a slice
+
+Once the contract is approved and you're on a feature branch, invoke the `implement-slice` skill — phrasings like `implement create-film`, `build the autosave-film slice`, `ship import-films`.
+
+The skill reads `intent.md` / `spec.md` / `plan.md`, follows the plan's "Sequence", asks before running `prisma migrate dev` or `npm install`, runs lint/typecheck/unit/e2e verification, and updates the contract to mark the verb `implemented`. It does not open the PR — that's your step.
+
 ## Slice loop
 
 Repeat for every slice:
@@ -33,7 +39,7 @@ Plan → Approve → Implement → Verify → Review → Merge → Repeat
 1. Invoke the `new-slice` skill (e.g. "plan create-film") to draft or update `docs/slices/<entities>/{intent,spec,plan}.md`.
 2. Review and approve the contract before implementation.
 3. Create a feature branch.
-4. Implement only the approved slice.
+4. Invoke the `implement-slice` skill (e.g. "implement create-film") to turn the approved contract into working code, tests, and verification.
 5. Run automated checks and inspect the interface.
 6. Review the result against `spec.md` → "Done means".
 7. Open a pull request, get required checks green.
@@ -78,9 +84,11 @@ next-drizzle-crud-starter/
 │           └── plan.md
 ├── .claude/
 │   └── skills/
-│       └── new-slice/              # contract-drafting skill
-│           ├── SKILL.md
-│           └── contract-template.md
+│       ├── new-slice/              # drafts the per-entity contract
+│       │   ├── SKILL.md
+│       │   └── contract-template.md
+│       └── implement-slice/        # turns an approved contract into code
+│           └── SKILL.md
 ├── prisma/
 │   ├── schema.prisma
 │   └── migrations/                 # created by `prisma migrate dev`
