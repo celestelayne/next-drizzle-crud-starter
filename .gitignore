@@ -44,3 +44,9 @@ next-env.d.ts
 
 # agent runtimes (keep .claude/ and .agents/)
 /.windsurf
+
+# playwright
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
